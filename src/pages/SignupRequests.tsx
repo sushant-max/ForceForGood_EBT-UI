@@ -66,6 +66,7 @@ interface SignupRequest {
   documents?: Document[]
 }
 export const SignupRequests: React.FC = () => {
+  const { getToken } = useAuth();
   const [requests, setRequests] = useState<CorporateRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -85,9 +86,10 @@ export const SignupRequests: React.FC = () => {
     setLoading(true)
     setError(null)
     try {
-
+      const token = getToken();
       const response = await axios.get(
-        'https://us-central1-test-donate-tags.cloudfunctions.net/api/admin/signup-requests'
+        'https://us-central1-test-donate-tags.cloudfunctions.net/api/admin/signup-requests',
+        { headers: { Authorization: `Bearer ${token}` } }
       )
       const signupRequests: CorporateRecord[] = response.data;
       
@@ -106,10 +108,12 @@ export const SignupRequests: React.FC = () => {
   }
   const handleApproveRequest = async (request: CorporateRecord) => {
     try {
+      const token = getToken();
       axios
       .put(
         `https://us-central1-test-donate-tags.cloudfunctions.net/api/admin/corporates/status/${request.corporate_id}`,
         { status: 'active' },
+        { headers: { Authorization: `Bearer ${token}` } }
       )
       .then((response) => {
         if (response.status !== 200) {
@@ -140,10 +144,12 @@ export const SignupRequests: React.FC = () => {
     }
   }
   const handleRejectRequest = async (request: CorporateRecord) => {
+    const token = getToken();
     axios
       .put(
         `https://us-central1-test-donate-tags.cloudfunctions.net/api/admin/corporates/status/${request.corporate_id}`,
-        { status: 'inactive', 'rejectionReason': rejectionComment },
+        { status: 'rejected', 'rejectionReason': rejectionComment },
+        { headers: { Authorization: `Bearer ${token}` } }
       )
       .then((response) => {
         if (response.status !== 200) {

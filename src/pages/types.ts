@@ -44,6 +44,7 @@ export interface UserProfile {
     id: string; 
     user_uid: string;
     license_id: string;
+    license_key: string;
     device_details: DeviceDetail[];
     user_details: UserDetails;
     geohash: string;
@@ -78,6 +79,7 @@ export interface CorporateRegistration {
     phoneNumber: string; // Includes country code and formatting
     panNumber: string;
     gstNumber: string;
+    licensesNeeded: number; // Number of licenses requested
     
     // Contact Person Details
     name: string;
@@ -115,7 +117,7 @@ export interface AdminUserDetails {
 export interface CorporateAdmin {
     id: string; // Firestore Document ID for the admin user
     corporateId: string; // UUID of the parent corporate record
-    registration_status: 'active' | 'pending' | 'inactive' | string;
+    registration_status: 'active' | 'pending' | 'inactive' | 'rejected' |string;
     user_details: AdminUserDetails;
     user_roles: string[]; // e.g., ['corporate_admin']
     register_date: string; // Assuming 'MM/D/YYYY' date string format

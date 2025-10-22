@@ -6,6 +6,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { EmptyState } from '../components/EmptyState';
 import { UserProfile } from './types';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 // New interface for the add individual form
 interface AddIndividualFormData {
@@ -14,6 +15,7 @@ interface AddIndividualFormData {
   status: 'active' | 'pending' | 'inactive';
 }
 export const IndividualManagement: React.FC = () => {
+  const {getToken} = useAuth();
   const [individuals, setIndividuals] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,95 +44,12 @@ export const IndividualManagement: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      // Simulate API call
-      // await new Promise(resolve => setTimeout(resolve, 1000));
-      const response = await axios.get('https://us-central1-test-donate-tags.cloudfunctions.net/api/admin/volunteers');
+      const token = getToken();
+      const response = await axios.get(
+        'https://us-central1-test-donate-tags.cloudfunctions.net/api/admin/volunteers',
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       const individualsData: UserProfile[] = response.data;
-      // Mock data
-      // const mockIndividuals: Individual[] = [{
-      //   id: '1',
-      //   name: 'John Smith',
-      //   email: 'john.smith@techgiant.com',
-      //   status: 'active',
-      //   corporate: 'TechGiant Inc.',
-      //   corporateId: '1',
-      //   role: 'Corporate Admin',
-      //   joinedDate: '2023-01-20',
-      //   lastActivity: '2023-05-20'
-      // }, {
-      //   id: '2',
-      //   name: 'Sarah Johnson',
-      //   email: 'sarah.j@globalfinance.com',
-      //   status: 'active',
-      //   corporate: 'Global Finance Ltd',
-      //   corporateId: '2',
-      //   role: 'Corporate Admin',
-      //   joinedDate: '2023-02-25',
-      //   lastActivity: '2023-05-18'
-      // }, {
-      //   id: '3',
-      //   name: 'Michael Brown',
-      //   email: 'michael.b@techgiant.com',
-      //   status: 'active',
-      //   corporate: 'TechGiant Inc.',
-      //   corporateId: '1',
-      //   role: 'Volunteer',
-      //   joinedDate: '2023-02-10',
-      //   lastActivity: '2023-05-19'
-      // }, {
-      //   id: '4',
-      //   name: 'Emily Davis',
-      //   email: 'emily.d@techgiant.com',
-      //   status: 'active',
-      //   corporate: 'TechGiant Inc.',
-      //   corporateId: '1',
-      //   role: 'Volunteer',
-      //   joinedDate: '2023-03-05',
-      //   lastActivity: '2023-05-15'
-      // }, {
-      //   id: '5',
-      //   name: 'David Wilson',
-      //   email: 'david.w@acme.com',
-      //   status: 'pending',
-      //   corporate: 'Acme Corporation',
-      //   corporateId: '3',
-      //   role: 'Volunteer',
-      //   joinedDate: '2023-05-10',
-      //   lastActivity: '2023-05-10'
-      // },
-      // // Adding independent individuals without corporate associations
-      // {
-      //   id: '6',
-      //   name: 'Jessica Taylor',
-      //   email: 'jessica.t@gmail.com',
-      //   status: 'active',
-      //   corporate: '',
-      //   corporateId: '',
-      //   role: 'Individual',
-      //   joinedDate: '2023-03-15',
-      //   lastActivity: '2023-05-17'
-      // }, {
-      //   id: '7',
-      //   name: 'Robert Chen',
-      //   email: 'robert.c@outlook.com',
-      //   status: 'active',
-      //   corporate: '',
-      //   corporateId: '',
-      //   role: 'Individual',
-      //   joinedDate: '2023-04-05',
-      //   lastActivity: '2023-05-16'
-      // }, {
-      //   id: '8',
-      //   name: 'Maria Rodriguez',
-      //   email: 'maria.r@yahoo.com',
-      //   status: 'inactive',
-      //   corporate: '',
-      //   corporateId: '',
-      //   role: 'Individual',
-      //   joinedDate: '2023-02-18',
-      //   lastActivity: '2023-04-20'
-      // }];
-      // Filter to only include individuals without corporate associations
       const independentIndividuals = individualsData.filter(individual => individual.user_roles[0] === 'individual');
       setIndividuals(independentIndividuals);
     } catch (err) {
@@ -142,7 +61,10 @@ export const IndividualManagement: React.FC = () => {
   };
   const handleDeleteIndividual = (individual: UserProfile) => {
     if (window.confirm(`Are you sure you want to delete ${individual.user_details?.name || 'this user'}?`)) {
-      axios.delete(`https://us-central1-test-donate-tags.cloudfunctions.net/api/admin/volunteers/${individual.user_uid}`)
+      const token = getToken();
+      axios.delete(`https://us-central1-test-donate-tags.cloudfunctions.net/api/admin/volunteers/${individual.user_uid}`
+        , { headers: { Authorization: `Bearer ${token}` } }
+      )
         .then(response => {
           if (response.status !== 200) {
             alert('Error deleting user. Please try again.');
@@ -163,9 +85,11 @@ export const IndividualManagement: React.FC = () => {
   const handleStatusUpdate = () => {
     if (!selectedIndividual) return;
     // Update status via API
+    const token = getToken();
     axios.put(
       `https://us-central1-test-donate-tags.cloudfunctions.net/api/admin/volunteers/status/${selectedIndividual.user_uid}`,
-      { status: newStatus }
+      { status: newStatus },
+      { headers: { Authorization: `Bearer ${token}` } }
     ).then(response => {
       if (response.status !== 200) {
       setError('Error updating status. Please try again.');
@@ -225,13 +149,15 @@ export const IndividualManagement: React.FC = () => {
     }
     setIsSubmitting(true);
     try {
+      const token = getToken();
       const response = await axios.post(
         'https://us-central1-test-donate-tags.cloudfunctions.net/api/admin/individual',
         {
           emailId: formData.email,
           name: formData.name,
           status: formData.status
-        }
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       // If not created, show error dialog
       if (response.status !== 201) {

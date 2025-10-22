@@ -6,6 +6,8 @@ import { LoadingSkeleton } from '../components/LoadingSkeleton'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EmptyState } from '../components/EmptyState'
 import { useAuth } from '../context/AuthContext'
+import * as XLSX from 'xlsx'; 
+
 import {
   Plus,
   UserCheck,
@@ -25,7 +27,7 @@ import {
 } from 'lucide-react'
 
 export const VolunteerManagement: React.FC = () => {
-  const { user } = useAuth()
+  const { user,getToken } = useAuth()
   const isSuperAdmin = user?.role === 'super_admin'
   const [volunteers, setVolunteers] = useState<UserProfile[]>([])
   const [loading, setLoading] = useState(true)
@@ -79,23 +81,9 @@ export const VolunteerManagement: React.FC = () => {
     }[]
   >([])
 
-  const getCorporateNameById = (corporateId: string): string => {
-    const corporateMap: {
-      [key: string]: string
-    } = {
-      '1': 'TechGiant Inc.',
-      '2': 'Global Finance Ltd',
-      '3': 'Acme Corporation',
-      '4': 'Oceanic Airlines',
-    }
-    return corporateMap[corporateId] || 'Unknown Corporate'
-  }
-
   const corporateName = isSuperAdmin
     ? 'All Corporates'
-    : user?.corporateId
-      ? getCorporateNameById(user.corporateId)
-      : ''
+    : user?.corporateName ? user?.corporateName : 'Unknown Corporate';
 
   useEffect(() => {
     fetchVolunteers()
@@ -104,13 +92,38 @@ export const VolunteerManagement: React.FC = () => {
     // setAvailableLicenses(fetchAvailableLicenses())
   }, [user])
 
+  const exportToXLSX = async (data: UserProfile[], corporateName: string): Promise<string> => {
+    // 1. Map data to the desired sheet format
+    const wsData = data.map(v => ({
+        'EMAIL ADDRESS': v.user_details.email_id,
+        'LICENSE KEY': v.license_key,
+        'NAME': v.user_details.name || '',
+    }));
+
+    // 2. Create a worksheet and workbook
+    const ws = XLSX.utils.json_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "LicenseKeys");
+
+    // 3. Generate a file name
+    const date = new Date().toISOString().slice(0, 10);
+    const fileName = `${corporateName}_Licenses_${date}.xlsx`;
+
+    // 4. Write and download the file
+    await XLSX.writeFile(wb, fileName);
+    
+    return fileName;
+  };
+
   const fetchVolunteers = async () => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
+    const token = getToken();
     try {
       if(isSuperAdmin) {
         const response = await axios.get(
           'https://us-central1-test-donate-tags.cloudfunctions.net/api/admin/volunteers',
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         const apiUsers: UserProfile[] = response.data;
         const corporateUsers = apiUsers.filter((individual) => individual.user_roles[0] === 'corporate_individual');
@@ -118,6 +131,11 @@ export const VolunteerManagement: React.FC = () => {
       } else {
         const response = await axios.get(
           `https://us-central1-test-donate-tags.cloudfunctions.net/corporateapi/corporate/volunteers/${user?.corporateId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
         );
         const apiUsers: UserProfile[] = response.data;
         const corporateUsers = apiUsers.filter((v) => v.corporateId === user?.corporateId && v.user_roles[0] === 'corporate_individual');
@@ -133,12 +151,15 @@ export const VolunteerManagement: React.FC = () => {
 
   const handleAddVolunteer = () => {
     if (!newVolunteer.name.trim() || !newVolunteer.email.trim()) return
+    const token = getToken();
     axios
       .post('https://us-central1-test-donate-tags.cloudfunctions.net/corporateapi/corporate/volunteer', {
-        corporateId: user?.corporateId,
-        emailId: newVolunteer.email.trim(),
-        name: newVolunteer.name.trim(),
-      })
+          corporateId: user?.corporateId,
+          emailId: newVolunteer.email.trim(),
+          name: newVolunteer.name.trim(),
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
       .then((response) => {
         if (response.status !== 200) {
           setError('Failed to add volunteer. Please try again.');
@@ -161,6 +182,7 @@ export const VolunteerManagement: React.FC = () => {
     formData.append('data', bulkFile);
     let progress = 0;
     setBulkUploadProgress(progress)
+    const token = getToken();
     axios
       .post(
         'https://us-central1-test-donate-tags.cloudfunctions.net/corporateapi/corporate/volunteers',
@@ -168,6 +190,7 @@ export const VolunteerManagement: React.FC = () => {
         {
           headers: {
             'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}`
           },
         }
       )
@@ -262,10 +285,12 @@ export const VolunteerManagement: React.FC = () => {
 
   const handleUpdateVolunteer = () => {
     if (!editVolunteer) return
+    const token = getToken();
     axios
       .put(
         `https://us-central1-test-donate-tags.cloudfunctions.net/corporateapi/corporate/volunteers/${user?.corporateId}/${editVolunteer.user_uid}`,
-        { status: editVolunteer.registration_status, name: editVolunteer.user_details?.name , emailId: editVolunteer.user_details?.email_id }
+        { status: editVolunteer.registration_status, name: editVolunteer.user_details?.name , emailId: editVolunteer.user_details?.email_id },
+        { headers: { Authorization: `Bearer ${token}` } }
       )
       .then((response) => {
         if (response.status !== 200) {
@@ -318,10 +343,34 @@ export const VolunteerManagement: React.FC = () => {
     }
     setIsSendingLicense(true)
     try {
-      // Example integration:
-      // await axios.post(`/corporateapi/corporate/licenses/send/${user?.corporateId}/${volunteer.user_uid}`)
-      setLicenseSentSuccess(`License successfully sent to ${volunteer.user_details?.name}.`)
-      setTimeout(() => setLicenseSentSuccess(null), 3000)
+      const subject = `License Key under ${corporateName} for Equibillion Foundation`;
+      const bodyText = `
+        Dear User,
+
+        You have been successfully onboarded under ${corporateName} for Equibillion Foundation.
+
+        Here is your unique license key:
+        ---
+        ${volunteer.license_key}
+        ---
+
+        Please keep this key secure.
+        Reach out to the sender of this email for any assistance.
+
+        Regards,
+        ${corporateName} Support Team
+      `;
+      const encodedSubject = encodeURIComponent(subject);
+      const encodedBody = encodeURIComponent(bodyText);
+
+      const mailtoLink = 
+        `mailto:${volunteer.user_details.email_id}` + 
+        `?subject=${encodedSubject}` +
+        `&body=${encodedBody}`;
+
+      // Navigate the browser to the mailto link, opening the default client
+      setIsSendingLicense(false);
+      window.location.href = mailtoLink;
     } catch (e) {
       console.error('Failed to send license', e)
       alert('Failed to send license. Please try again.')
@@ -343,6 +392,13 @@ export const VolunteerManagement: React.FC = () => {
         !!v.license_id,
     )
 
+    const fileName = await exportToXLSX(volunteersToSend, corporateName);
+    if(!fileName) {
+      alert('Failed to generate license file. Please try again.');
+      return;
+    }
+    alert(`License keys exported to ${fileName}. Please send this file to the selected volunteers via email.`);
+
     if (volunteersToSend.length === 0) {
       alert('No selected volunteers with licenses to send.')
       return
@@ -358,6 +414,40 @@ export const VolunteerManagement: React.FC = () => {
         setBulkSendStatus('idle')
         setSelectedVolunteers([]) // Clear selection after successful bulk send
       }, 1500)
+      const subject = `Bulk License Key Distribution - File Attached`;
+
+      const recipientList = volunteersToSend.map(v => v.user_details.email_id).join(',');
+
+    // 3. Construct the email body with instructions
+    const instructionBody = `
+      Dear Team,
+
+      The bulk license keys for all volunteers are contained in the attached Excel file (${fileName}).
+
+      This email is for internal distribution only.
+
+      Regards,
+      ${corporateName} Admin
+    `;
+
+    // 4. Construct the mailto link
+    const encodedSubject = encodeURIComponent(subject);
+    const encodedBody = encodeURIComponent(instructionBody);
+    
+    // Set the TO field to the full list of recipients
+    const mailtoLink = 
+        `mailto:${recipientList}` + 
+        `?subject=${encodedSubject}` +
+        `&body=${encodedBody}`;
+
+    // IMPORTANT: Warn about long URL (large number of recipients)
+    if (mailtoLink.length > 2000) {
+        alert("Warning: The recipient list is very long. Your email client may reject or truncate the address list. Check the TO field carefully.");
+    }
+    
+    // 5. Navigate the browser to the mailto link
+    window.location.href = mailtoLink;
+
     } catch (e) {
       console.error('Failed to bulk send licenses', e)
       setBulkSendStatus('error')
@@ -366,10 +456,12 @@ export const VolunteerManagement: React.FC = () => {
 
   const handleDeleteVolunteer = (volunteer: UserProfile) => {
     if (confirm(`Are you sure you want to remove ${volunteer.user_details?.name || 'this user'}?`)) {
+      const token = getToken();
       if(isSuperAdmin) {
         axios
         .delete(
           `https://us-central1-test-donate-tags.cloudfunctions.net/api/admin/volunteers/${volunteer.user_uid}`,
+          { headers: { Authorization: `Bearer ${token}` } }
         )
         .then((response) => {
           if (response.status !== 200) {
@@ -385,6 +477,7 @@ export const VolunteerManagement: React.FC = () => {
         axios
         .delete(
           `https://us-central1-test-donate-tags.cloudfunctions.net/corporateapi/corporate/volunteers/${user?.corporateId}/${volunteer.user_uid}`,
+          { headers: { Authorization: `Bearer ${token}` } }
         )
         .then((response) => {
           if (response.status !== 200) {
@@ -401,10 +494,12 @@ export const VolunteerManagement: React.FC = () => {
   }
 
   const handleActivateVolunteer = (volunteer: UserProfile) => {
+    const token = getToken();
     axios
       .put(
         `https://us-central1-test-donate-tags.cloudfunctions.net/corporateapi/corporate/volunteers/${user?.corporateId}/${volunteer.user_uid}`,
-        { status: 'active' }
+        { status: 'active' },
+        { headers: { Authorization: `Bearer ${token}` } }
       )
       .then((response) => {
         if (response.status !== 200) {
@@ -419,10 +514,12 @@ export const VolunteerManagement: React.FC = () => {
   }
 
   const handleDeactivateVolunteer = (volunteer: UserProfile) => {
+    const token = getToken();
     axios
       .put(
         `https://us-central1-test-donate-tags.cloudfunctions.net/corporateapi/corporate/volunteers/${user?.corporateId}/${volunteer.user_uid}`,
-        { status: 'inactive' }
+        { status: 'inactive' },
+        { headers: { Authorization: `Bearer ${token}` } }
       )
       .then((response) => {
         if (response.status !== 200) {
@@ -457,26 +554,30 @@ export const VolunteerManagement: React.FC = () => {
 
   // New function to handle status update from modal
   const handleStatusUpdateFromModal = () => {
-    if (!selectedVolunteer) return
-    axios
+    if (!selectedVolunteer) return;
+    if(isSuperAdmin) {
+      const token = getToken();
+      axios
       .put(
-        `https://us-central1-test-donate-tags.cloudfunctions.net/api/admin/volunteers/status/${selectedVolunteer.id}`,
+        `https://us-central1-test-donate-tags.cloudfunctions.net/api/admin/volunteers/status/${selectedVolunteer.user_uid}`,
         { status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
       )
       .then((response) => {
         if (response.status !== 200) {
           setError('Error updating status. Please try again.')
           return
         }
-        fetchVolunteers()
-        setShowStatusEditModal(false)
-        setSelectedVolunteer(null)
+        fetchVolunteers();
+        setShowStatusEditModal(false);
+        setSelectedVolunteer(null);
       })
       .catch(() => {
-        setError('Error updating status. Please try again.')
-        setShowStatusEditModal(false)
-        setSelectedVolunteer(null)
+        setError('Error updating status. Please try again.');
+        setShowStatusEditModal(false);
+        setSelectedVolunteer(null);
       })
+      }
   }
 
   // Update renderSuperAdminActions to remove the status toggle icons
@@ -1494,7 +1595,7 @@ export const VolunteerManagement: React.FC = () => {
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="text-center mb-2">
                     <p className="text-sm font-medium text-gray-500">License Key</p>
-                    <p className="text-lg font-mono font-semibold text-gray-900 mt-1 break-all">{selectedVolunteer.license_id}</p>
+                    <p className="text-lg font-mono font-semibold text-gray-900 mt-1 break-all">{selectedVolunteer.license_key}</p>
                   </div>
                   {/* Assuming licenseExpiryDate could be added to UserProfile if backend provides it */}
                  

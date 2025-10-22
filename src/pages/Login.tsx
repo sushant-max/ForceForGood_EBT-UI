@@ -68,13 +68,6 @@ export const Login: React.FC = () => {
                 </label>
                 <input id="password" name="password" type="password" required value={password} onChange={e => setPassword(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#466EE5] focus:border-[#466EE5]" aria-describedby="password-helper" />
               </div>
-              <div className="text-sm text-gray-600 p-3 bg-gray-50 rounded-md" id="email-helper">
-                <p>Use the following credentials for demo:</p>
-                <ul className="list-disc pl-5 mt-1">
-                  <li>Admin: admin@equibillion.io / admin123</li>
-                  <li>Corporate Admin: corpadmin@equibillion.io / corp123</li>
-                </ul>
-              </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <input id="remember-me" name="remember-me" type="checkbox" className="h-4 w-4 text-[#466EE5] focus:ring-[#466EE5] border-gray-300 rounded" />

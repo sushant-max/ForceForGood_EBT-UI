@@ -26,6 +26,7 @@ export const CorporateSignup: React.FC = () => {
     adminEmail: '',
     adminPassword: '',
     adminConfirmPassword: '',
+    licensesNeeded: '', // Added property
   })
   const [uploadedFiles, setUploadedFiles] = useState<
     {
@@ -243,6 +244,7 @@ export const CorporateSignup: React.FC = () => {
       phoneNumber: formData.phoneNumber,
       panNumber: formData.panNumber,
       gstNumber: formData.gstNumber,
+      licensesNeeded: Number(formData.licensesNeeded) || 1, // Default to 1 if not provided
       name: `${formData.adminFirstName} ${formData.adminLastName}`.trim(),
       emailId: formData.adminEmail,
       password: formData.adminPassword,
@@ -571,6 +573,7 @@ export const CorporateSignup: React.FC = () => {
                       placeholder="22AAAAA0000A1Z5"
                       className={`mt-1 block w-full border ${fieldErrors.gstNumber ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#466EE5] focus:border-[#466EE5] uppercase`}
                     />
+
                     <p className="mt-1 text-xs text-gray-500">
                       Format: 2 digits, 10 chars (PAN), 1 digit, 1 char, 1 char
                       (e.g., 22AAAAA0000A1Z5)
@@ -581,6 +584,25 @@ export const CorporateSignup: React.FC = () => {
                       </p>
                     )}
                   </div>
+                    <div className="mt-4">
+                      <label
+                        htmlFor="licensesNeeded"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Number of Licenses Needed <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        name="licensesNeeded"
+                        id="licensesNeeded"
+                        min={1}
+                        required
+                        value={formData.licensesNeeded || ''}
+                        onChange={handleInputChange}
+                        placeholder="Enter number of licenses"
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#466EE5] focus:border-[#466EE5]"
+                      />
+                    </div>
                 </div>
               </div>
             )}

@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext'
 
 
 export const LicensesDashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user,getToken } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<any>(null);
@@ -19,9 +19,10 @@ export const LicensesDashboard: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-
+      const token = getToken();
       const response = await axios.get(
-        `https://us-central1-test-donate-tags.cloudfunctions.net/corporateapi/corporate/license-details/${user?.corporateId}`
+        `https://us-central1-test-donate-tags.cloudfunctions.net/corporateapi/corporate/license-details/${user?.corporateId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       const date  = response.data.expiryAt;
       const rawDate = date;
