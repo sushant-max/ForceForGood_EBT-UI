@@ -3,6 +3,8 @@ import { Menu, ChevronLeft, ChevronRight, User, LogOut, Settings } from 'lucide-
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ProfileModal } from './ProfileModal';
+import { LogoutConfirmationModal } from './LogoutConfirmationModal'
+
 type HeaderProps = {
   toggleSidebar: () => void;
   toggleMobileMenu: () => void;
@@ -20,6 +22,7 @@ export const Header: React.FC<HeaderProps> = ({
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   // Close dropdown when clicking outside
@@ -35,6 +38,8 @@ export const Header: React.FC<HeaderProps> = ({
       if (event.key === 'Escape') {
         setIsDropdownOpen(false);
         setIsProfileModalOpen(false);
+        setIsLogoutModalOpen(false)
+
       }
     };
     document.addEventListener('keydown', handleKeyDown);
@@ -43,15 +48,22 @@ export const Header: React.FC<HeaderProps> = ({
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-    setIsDropdownOpen(false);
-  };
+  const handleLogoutClick = () => {
+    setIsDropdownOpen(false)
+    setIsLogoutModalOpen(true)
+  }
+  const handleLogoutConfirm = () => {
+    logout()
+    navigate('/login')
+    setIsLogoutModalOpen(false)
+  }
+  const handleLogoutCancel = () => {
+    setIsLogoutModalOpen(false)
+  }
   const handleProfileClick = () => {
-    setIsProfileModalOpen(true);
-    setIsDropdownOpen(false);
-  };
+    setIsProfileModalOpen(true)
+    setIsDropdownOpen(false)
+  }
   return <header className="bg-white border-b border-gray-200 shadow-sm">
       <div className="flex items-center justify-between h-16 px-4 sm:px-6">
         <div className="flex items-center">
@@ -63,7 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
           <div className="ml-4 md:ml-6">
             <h1 className="text-lg font-semibold text-[#111827]">
-              Equibillion Foundation
+              Equibillion
             </h1>
           </div>
         </div>
@@ -85,7 +97,8 @@ export const Header: React.FC<HeaderProps> = ({
                 <Settings size={16} className="mr-2" />
                 <span>View/Edit Profile</span>
               </button>
-              <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100" onClick={handleLogout} role="menuitem" tabIndex={0}>
+              <button
+                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100" onClick={handleLogoutClick} role="menuitem" tabIndex={0}>
                 <LogOut size={16} className="mr-2" />
                 <span>Logout</span>
               </button>
@@ -94,5 +107,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
       {/* Profile Modal */}
       {isProfileModalOpen && <ProfileModal user={user} onClose={() => setIsProfileModalOpen(false)} />}
+         {/* Logout Confirmation Modal */}
+      <LogoutConfirmationModal isOpen={isLogoutModalOpen} onConfirm={handleLogoutConfirm} onCancel={handleLogoutCancel} />
     </header>;
 };

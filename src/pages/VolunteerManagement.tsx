@@ -343,11 +343,11 @@ export const VolunteerManagement: React.FC = () => {
     }
     setIsSendingLicense(true)
     try {
-      const subject = `License Key under ${corporateName} for Equibillion Foundation`;
+      const subject = `License Key under ${corporateName} for Equibillion`;
       const bodyText = `
         Dear User,
 
-        You have been successfully onboarded under ${corporateName} for Equibillion Foundation.
+        You have been successfully onboarded under ${corporateName} for Equibillion.
 
         Here is your unique license key:
         ---

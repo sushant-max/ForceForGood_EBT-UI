@@ -202,13 +202,49 @@ export function DataTable<T>({
         </div>
       </div>;
   }
+  // Check if search returned no results
+  if (searchTerm && filteredData.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        {searchable && (
+          <div className="p-4 border-b border-gray-200">
+            <div className="relative rounded-md shadow-sm max-w-xs">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                className="block w-full pl-10 sm:text-sm border-gray-300 rounded-md outline-none transition-all duration-200 focus:border-[#A0C4FF] focus:shadow-[0_0_3px_#A0C4FF]"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
+        <div className="p-12 text-center">
+          <Search className="mx-auto h-12 w-12 text-gray-300" />
+          <h3 className="mt-4 text-base font-medium text-gray-900">
+            No results found
+          </h3>
+          <p className="mt-2 text-sm text-gray-500">
+            No matches found for "{searchTerm}". Try a different search term.
+          </p>
+        </div>
+      </div>
+    )
+  }  
   return <div className="bg-white rounded-lg shadow overflow-hidden">
       {searchable && <div className="p-4 border-b border-gray-200">
           <div className="relative rounded-md shadow-sm max-w-xs">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-gray-400" />
             </div>
-            <input type="text" className="focus:ring-[#466EE5] focus:border-[#466EE5] block w-full pl-10 sm:text-sm border-gray-300 rounded-md" placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            <input type="text" 
+            // className="focus:ring-[#466EE5] focus:border-[#466EE5] block w-full pl-10 sm:text-sm border-gray-300 rounded-md" 
+            //Updated the Search Border Color Issue.
+            className="block w-full pl-10 sm:text-sm border-gray-300 rounded-md outline-none transition-all duration-200 focus:border-[#A0C4FF] focus:shadow-[0_0_3px_#A0C4FF]"
+            placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
         </div>}
       <div className="overflow-x-auto">

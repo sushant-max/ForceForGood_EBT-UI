@@ -201,7 +201,7 @@ export const IndividualSignup: React.FC = () => {
       <div className="max-w-md mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#111827]">
-            Equibillion Foundation
+            Equibillion
           </h1>
           <h2 className="mt-2 text-xl font-semibold text-[#374151]">
             Individual Registration

@@ -42,8 +42,21 @@ export const Login: React.FC = () => {
   return <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB] px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
+          {/* displaying image */}
+          <div className="flex justify-center mb-6">
+            <img
+              src="src/context/logo.png"
+              alt="Equibillion Logo"
+              className="h-52 w-auto"
+              onError={(e) => {
+                // Hide image if it fails to load
+                e.currentTarget.style.display = 'none'
+              }}
+            />
+          </div>
+          {/* displaying image */}
           <h1 className="text-3xl font-bold text-[#111827]">
-            Equibillion Foundation
+            Equibillion
           </h1>
           <h2 className="mt-2 text-xl font-semibold text-[#374151]">
             Sign in to your account
