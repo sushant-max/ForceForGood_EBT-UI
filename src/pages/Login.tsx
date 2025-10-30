@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import logo from '../context/logo.png';
 import { AlertCircle } from 'lucide-react';
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -45,7 +46,8 @@ export const Login: React.FC = () => {
           {/* displaying image */}
           <div className="flex justify-center mb-6">
             <img
-              src="src/context/logo.png"
+              {/* src="src/context/logo.png" */}
+              src={logo}
               alt="Equibillion Logo"
               className="h-52 w-auto"
               onError={(e) => {
