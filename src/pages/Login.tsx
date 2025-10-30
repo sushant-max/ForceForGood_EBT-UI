@@ -46,7 +46,6 @@ export const Login: React.FC = () => {
           {/* displaying image */}
           <div className="flex justify-center mb-6">
             <img
-              {/* src="src/context/logo.png" */}
               src={logo}
               alt="Equibillion Logo"
               className="h-52 w-auto"
