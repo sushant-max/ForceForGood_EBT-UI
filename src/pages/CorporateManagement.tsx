@@ -487,22 +487,23 @@ const handleLicenseUpdate = async () => {
 
   const renderActions = (corporate: Corporate) => (
     <div className="flex justify-end space-x-2">
-      <Link to={`/corporate-management/${corporate.corporate_id}`} className="text-[#466EE5] hover:text-[#3355cc]" aria-label={`View ${corporate.corporate_name}`}>
+      <Link to={`/corporate-management/${corporate.corporate_id}`} className="text-[#466EE5] hover:text-[#3355cc]" title="View Corporate" aria-label={`View ${corporate.corporate_name}`}>
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye">
           <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
           <circle cx="12" cy="12" r="3" />
         </svg>
       </Link>
-      <button onClick={() => handleManageLicenses(corporate)} className="text-purple-600 hover:text-purple-700" aria-label={`Manage licenses for ${corporate.corporate_name}`}>
+      <button onClick={() => handleManageLicenses(corporate)} className="text-purple-600 hover:text-purple-700" title="Update License" aria-label={`Manage licenses for ${corporate.corporate_name}`}>
         <Key className="h-5 w-5" />
       </button>
-      <button onClick={() => handleEditCorporate(corporate)} className="text-amber-600 hover:text-amber-700" aria-label={`Edit ${corporate.corporate_name}`}>
+      <button onClick={() => handleEditCorporate(corporate)} className="text-amber-600 hover:text-amber-700" title="Edit Corporate" aria-label={`Edit ${corporate.corporate_name}`}>
         <Edit className="h-5 w-5" />
       </button>
       {/* Disable the delete button if corporate is already terminated to prevent confusion */}
       <button 
           onClick={() => handleDeleteCorporate(corporate)} 
           className={`h-5 w-5 ${corporate.status === 'inactive' || corporate.status === 'terminated' || corporate.status === 'rejected' ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-700'}`} 
+          title="Delete Corporate"
           aria-label={`Terminate ${corporate.corporate_name}`}
           disabled={corporate.status === 'inactive' || corporate.status === 'terminated' || corporate.status === 'rejected'} // Disable if already inactive/terminated/rejected
       >

@@ -281,10 +281,10 @@ export const IndividualManagement: React.FC = () => {
     sortable: true
   }];
   const renderActions = (individual: UserProfile) => <div className="flex justify-end space-x-2">
-      <button onClick={() => handleEditIndividual(individual)} className="text-amber-600 hover:text-amber-700" aria-label={`Edit ${individual.user_details?.name ?? 'Unknown'}`}>
+      <button onClick={() => handleEditIndividual(individual)} className="text-amber-600 hover:text-amber-700" title="Edit Volunteer" aria-label={`Edit ${individual.user_details?.name ?? 'Unknown'}`}>
         <Edit className="h-5 w-5" />
       </button>
-      <button onClick={() => handleDeleteIndividual(individual)} className="text-red-600 hover:text-red-700" aria-label={`Delete ${individual.user_details?.name ?? 'Unknown'}`}>
+      <button onClick={() => handleDeleteIndividual(individual)} className="text-red-600 hover:text-red-700" title="Delete Volunteer" aria-label={`Delete ${individual.user_details?.name ?? 'Unknown'}`}>
         <Trash2 className="h-5 w-5" />
       </button>
     </div>;

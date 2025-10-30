@@ -315,6 +315,7 @@ export const SignupRequests: React.FC = () => {
                 handleViewRequest(row)
               }}
               className="text-[#466EE5] hover:text-[#3355cc]"
+              title="View Request"
               aria-label="View details"
             >
               <Eye size={18} />
@@ -327,6 +328,7 @@ export const SignupRequests: React.FC = () => {
                     handleApproveRequest(row)
                   }}
                   className="text-green-600 hover:text-green-700"
+                  title="Approve Request"
                   aria-label="Approve request"
                 >
                   <CheckCircle size={18} />
@@ -337,6 +339,7 @@ export const SignupRequests: React.FC = () => {
                     handleRejectRequest(row)
                   }}
                   className="text-red-600 hover:text-red-700"
+                  title="Reject Request"
                   aria-label="Reject request"
                 >
                   <XCircle size={18} />
