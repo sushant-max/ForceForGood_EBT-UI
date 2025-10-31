@@ -181,9 +181,18 @@ export const IndividualManagement: React.FC = () => {
       });
       setShowAddModal(false);
     } catch (err) {
-      setShowAddModal(false);
-      console.error('Failed to add individual:', err);
-      setError('Failed to add individual. Please try again.');
+      if(axios.isAxiosError(err) && err.response?.status === 409) {
+        setShowAddModal(false);
+        setError('An individual with this email already exists. Please use a different email.');
+      } else {
+        setShowAddModal(false);
+        setError('Failed to add individual. Please try again.');
+      }
+      setFormData({
+        name: '',
+        email: '',
+        status: 'active'
+      });
     } finally {
       setIsSubmitting(false);
     }

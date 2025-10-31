@@ -167,8 +167,12 @@ export const VolunteerManagement: React.FC = () => {
         }
         fetchVolunteers();
       })
-      .catch(() => {
-        setError('Failed to add volunteer. Please try again.')
+      .catch((error) => {
+        if(error.response.status === 409) {
+          setError('A volunteer with this email already exists.');
+        } else {
+          setError('Failed to add volunteer. Please try again.');
+        }
       });
     setNewVolunteer({ name: '', email: '' });
     setShowAddModal(false);
@@ -1596,6 +1600,14 @@ export const VolunteerManagement: React.FC = () => {
                   <div className="text-center mb-2">
                     <p className="text-sm font-medium text-gray-500">License Key</p>
                     <p className="text-lg font-mono font-semibold text-gray-900 mt-1 break-all">{selectedVolunteer.license_key}</p>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(selectedVolunteer.license_key);
+                            alert("License key copied!");
+                          }}
+                          className="text-sm px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-md transition">
+                          Copy
+                        </button>
                   </div>
                   {/* Assuming licenseExpiryDate could be added to UserProfile if backend provides it */}
                  

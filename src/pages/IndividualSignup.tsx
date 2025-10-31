@@ -166,11 +166,16 @@ export const IndividualSignup: React.FC = () => {
         setFormStatus('success');
       })
       .catch((error) => {
-        setFormStatus('error');
-        setFormError(
-          error.response?.data?.message ||
-          'An error occurred while submitting the application.'
-        );
+        if(error.response?.status === 409) {
+          setFormStatus('error');
+          setFormError('An account with this email already exists. Please use a different email or log in.');
+        } else {
+          setFormStatus('error');
+          setFormError(
+            error.response?.data?.message ||
+            'An error occurred while submitting the application.'
+          );
+        }
       });
     return;
   };

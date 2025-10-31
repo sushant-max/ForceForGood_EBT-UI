@@ -6,6 +6,7 @@ import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { EmptyState } from '../components/EmptyState';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 // Base URL for the API endpoint
 const API_BASE_URL = "https://us-central1-test-donate-tags.cloudfunctions.net/corporateManagementApi/admin/corporates";
@@ -54,6 +55,7 @@ export interface Corporate {
 }
 
 export const CorporateManagement: React.FC = () => {
+  const {getToken} = useAuth();
   const [corporates, setCorporates] = useState<Corporate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -120,8 +122,10 @@ export const CorporateManagement: React.FC = () => {
     setError(null);
 
     try {
+      const token = getToken();
       const response = await axios.get(
-        `${API_BASE_URL}`
+        `${API_BASE_URL}`,
+        { headers: { 'Authorization' : `Bearer ${token}` } }
       );
       console.log("API response:", response);
 
@@ -211,10 +215,11 @@ export const CorporateManagement: React.FC = () => {
 
     try {
       const corporateId = corporate.corporate_id;
-      
+      const token = getToken();
       const response = await axios.put(
         `${API_ACTION_URL}/${corporateId}`,
-        { action: 'inactive' }
+        { action: 'inactive' },
+        { headers: { 'Authorization' : `Bearer ${token}` } }
       );
       
       if (response.status === 200) {
@@ -274,10 +279,11 @@ const handleLicenseUpdate = async () => {
     try {
       const corporateId = selectedCorporate.corporate_id;
       const newLicenseQuota = licenseFormData.licenseCount;
-
+      const token = getToken();
       const response = await axios.put(
         `${API_ACTION_URL}/${corporateId}`,
-        { license_quota: newLicenseQuota }
+        { license_quota: newLicenseQuota },
+        { headers: { 'Authorization' : `Bearer ${token}` } }
       );
 
       if (response.status === 200) {
@@ -363,8 +369,15 @@ const handleLicenseUpdate = async () => {
           else if (newStatus === 'rejected' && oldStatus === 'pending') {
               payload.action = 'reject';
           }
-          // 4. Simple Status Change: If no action was determined, send 'status' field for direct updates 
-          // (e.g., active <-> inactive). We exclude 'rejected' as it should only be set via the 'reject' action.
+          // 4. INACTIVE Action: If status changes from pending -> rejected
+          else if (newStatus === 'inactive' && oldStatus === 'active') {
+              payload.action = 'inactive';
+          }
+          // 5. ACTIVE Action: If status changes from inactive -> active
+          else if (newStatus === 'active' && oldStatus === 'inactive') {
+              payload.action = 'active';
+          }
+          // 5. Simple Status Change: If no action was determined, send 'status' field for direct updates           
           else if (newStatus === 'pending' || newStatus === 'inactive') {
              // Only set status field if it's not an action
              if (!payload.action) {
@@ -384,10 +397,11 @@ const handleLicenseUpdate = async () => {
           setShowEditModal(false);
           return;
       }
-      
+      const token = getToken();
       const response = await axios.put(
         `${API_ACTION_URL}/${corporateId}`,
-        payload
+        payload,
+        { headers: { 'Authorization' : `Bearer ${token}` } }
       );
 
       if (response.status === 200) {

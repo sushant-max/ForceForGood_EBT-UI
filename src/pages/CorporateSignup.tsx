@@ -36,7 +36,8 @@ export const CorporateSignup: React.FC = () => {
       size: string
       type: string
       status: 'idle' | 'uploading' | 'success' | 'error'
-      progress: number
+      progress: number,
+      url: string
     }[]
   >([])
   const [formStep, setFormStep] = useState(1)
@@ -99,6 +100,7 @@ export const CorporateSignup: React.FC = () => {
       type: file.type,
       status: 'idle' as const,
       progress: 0,
+      url: ''
     }))
     setUploadedFiles((prev) => [...prev, ...newFiles])
     // Auto-start upload for new files
@@ -111,44 +113,135 @@ export const CorporateSignup: React.FC = () => {
       handleFileSelection(Array.from(e.target.files))
     }
   }
-  const simulateFileUpload = (fileId: string) => {
-    setUploadedFiles((prev) =>
-      prev.map((file) =>
-        file.id === fileId
-          ? {
+  const simulateFileUpload = async (fileId: string) => {
+    const getFileFromState = () => new Promise<File | undefined>((resolve) => {
+      setUploadedFiles((prev) => {
+        const fileToUpload = prev.find((file) => file.id === fileId)
+        const newState: {
+          id: string
+          name: string
+          file: File
+          size: string
+          type: string
+          status: 'idle' | 'uploading' | 'success' | 'error'
+          progress: number
+          url: string
+        }[] = prev.map((file) =>
+          file.id === fileId
+            ? {
               ...file,
               status: 'uploading',
+              progress: 0,
             }
-          : file,
-      ),
-    )
-    const interval = setInterval(() => {
-      setUploadedFiles((prev) => {
-        const fileIndex = prev.findIndex((file) => file.id === fileId)
-        if (fileIndex === -1) {
-          clearInterval(interval)
-          return prev
-        }
-        const file = prev[fileIndex]
-        if (file.progress >= 100) {
-          clearInterval(interval)
-          const newFiles = [...prev]
-          newFiles[fileIndex] = {
-            ...file,
-            status: 'success',
-            progress: 100,
-          }
-          return newFiles
-        }
-        const newFiles = [...prev]
-        newFiles[fileIndex] = {
-          ...file,
-          progress: file.progress + 10,
-        }
-        return newFiles
+            : file,
+        )
+        resolve(fileToUpload?.file)
+        return newState
       })
-    }, 300)
+    })
+
+    const file = await getFileFromState()
+
+    if (!file) {
+      console.error('File not found in state')
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const response = await fetch(
+        'https://us-central1-test-donate-tags.cloudfunctions.net/register/upload',
+        {
+          method: 'POST',
+          body: formData,
+        }
+      )
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder()
+
+      if (!reader) {
+        throw new Error('Failed to get response reader')
+      }
+
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+
+        const text = decoder.decode(value)
+        const lines = text.split('\n')
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6))
+
+              setUploadedFiles((prev) => {
+                const fileIndex = prev.findIndex((file) => file.id === fileId)
+                if (fileIndex === -1) return prev
+
+                const file = prev[fileIndex]
+                const newFiles = [...prev]
+
+                switch (data.type) {
+                  case 'uploading':
+                    newFiles[fileIndex] = {
+                      ...file,
+                      status: 'uploading',
+                      progress: data.progress,
+                    }
+                    break
+
+                  case 'processing':
+                    newFiles[fileIndex] = {
+                      ...file,
+                      status: 'success',
+                      progress: 100,
+                    }
+                    break
+
+                  case 'completed':
+                    newFiles[fileIndex] = {
+                      ...file,
+                      status: 'success',
+                      progress: 100,
+                      url: data.url
+                    }
+                    break
+
+                  case 'error':
+                    newFiles[fileIndex] = {
+                      ...file,
+                      status: 'error',
+                      progress: 0,
+                    }
+                    break
+                }
+
+                return newFiles
+              })
+            } catch (e) {
+              console.error('Error parsing SSE data:', e)
+            }
+          }
+        }
+      }
+    } catch (error) {
+      setUploadedFiles((prev) =>
+        prev.map((file) =>
+          file.id === fileId
+            ? {
+              ...file,
+              status: 'error',
+              progress: 0,
+            }
+            : file,
+        ),
+      )
+    }
   }
+
   const removeFile = (fileId: string) => {
     setUploadedFiles((prev) => prev.filter((file) => file.id !== fileId))
   }
@@ -251,7 +344,7 @@ export const CorporateSignup: React.FC = () => {
       // Map uploaded files to document structure
       documents: uploadedFiles.map((file) => ({
         type: file.name.includes('PAN') ? 'PAN_CARD' : file.name.includes('GST') ? 'GST_CERTIFICATE' : 'OTHER',
-        url: `https://example.com/uploads/${file.id}`, // Placeholder URL
+        url: file?.url || ''
       })),
     };
     axios
@@ -260,11 +353,16 @@ export const CorporateSignup: React.FC = () => {
         setFormStatus('success');
       })
       .catch((error) => {
+        if(error.response?.status === 400) {
+          setFormStatus('error');
+          setFormError(error.response?.data?.error || 'Invalid data provided. Please check your inputs.');
+        } else {
         setFormStatus('error');
         setFormError(
           error.response?.data?.message ||
           'An error occurred while submitting the application.'
         );
+        }
       });
     return;
   }

@@ -70,6 +70,9 @@ interface Document {
   name: string;
   uploadedAt: string | Date | FirebaseTimestamp;
   status: 'approved' | 'pending' | 'rejected';
+  url?: string;
+  type:string;
+
 }
 
 interface Corporate {
@@ -555,45 +558,64 @@ const isExpiredOrExpiresToday = (expiryTimestamp: Timestamp | null | undefined):
               </div>} */}
           </div>;
       case 'documents':
-        return <div className="bg-white rounded-xl shadow overflow-hidden">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Documents</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                Corporate documents and verification files
-              </p>
-            </div>
-            {corporate.documents.length > 0 ? <ul className="divide-y divide-gray-200">
-                {corporate.documents.map((doc, index) => <li key={index} className="p-6">
-                    <div className="flex items-center justify-between flex-wrap gap-4">
-                      <div className="flex items-center">
-                        <div className="p-2 rounded-full bg-blue-50 text-blue-600 mr-3">
-                          <FileText size={18} />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {doc.name || 'Untitled Document'}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            Uploaded on {formatDate(doc.uploadedAt)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${doc.status === 'approved' ? 'bg-green-100 text-green-800' : doc.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-                          {(doc.status ? doc.status.charAt(0).toUpperCase() + doc.status.slice(1) : 'Unknown')}
-                        </span>
-                        <button className="ml-4 text-sm font-medium text-[#466EE5] hover:text-[#3355cc]">
-                          View
-                        </button>
-                      </div>
-                    </div>
-                  </li>)}
-              </ul> : <div className="p-6">
-                <EmptyState title="No documents" description="This corporate has not uploaded any documents yet." icon={<FileText className="h-12 w-12 text-gray-400" />} />
-              </div>}
-          </div>;
-      default:
-        return null;
+  return (
+    <div className="bg-white rounded-xl shadow overflow-hidden">
+      <div className="p-6 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900">Documents</h3>
+        <p className="text-sm text-gray-500 mt-1">
+          Corporate documents and verification files
+        </p>
+      </div>
+
+      {corporate.documents.length > 0 ? (
+        <ul className="divide-y divide-gray-200">
+          {corporate.documents.map((doc, index) => (
+            <li key={index} className="p-6">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center">
+                  <div className="p-2 rounded-full bg-blue-50 text-blue-600 mr-3">
+                    <FileText size={18} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {doc.type || 'Untitled Document'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center">
+
+                  {doc.url ? (
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-4 text-sm font-medium text-[#466EE5] hover:text-[#3355cc]"
+                    >
+                      View
+                    </a>
+                  ) : (
+                    <span className="ml-4 text-sm text-gray-400 italic">
+                      No link available
+                    </span>
+                  )}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="p-6">
+          <EmptyState
+            title="No documents"
+            description="This corporate has not uploaded any documents yet."
+            icon={<FileText className="h-12 w-12 text-gray-400" />}
+          />
+        </div>
+      )}
+    </div>
+  );
+
     }
   };
   if (loading) {
