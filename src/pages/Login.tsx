@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import logo from '../context/logo.png';
+import logo from '/logo.png';
 import { AlertCircle } from 'lucide-react';
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -46,6 +46,7 @@ export const Login: React.FC = () => {
           {/* displaying image */}
           <div className="flex justify-center mb-6">
             <img
+              
               src={logo}
               alt="Equibillion Logo"
               className="h-52 w-auto"
@@ -56,21 +57,24 @@ export const Login: React.FC = () => {
             />
           </div>
           {/* displaying image */}
-          <h1 className="text-3xl font-bold text-[#111827]">
+          {/* <h1 className="text-3xl font-bold text-[#111827]">
             Equibillion
-          </h1>
-          <h2 className="mt-2 text-xl font-semibold text-[#374151]">
-            Sign in to your account
-          </h2>
+          </h1> */}
+        
         </div>
         <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-[#374151] mb-6 text-center">
+            Sign in to your account
+          </h2>
           {error && <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex items-center" role="alert">
               <AlertCircle className="h-5 w-5 mr-2" />
               <span>{error}</span>
             </div>}
           <form onSubmit={handleSubmit}>
             <div className="space-y-4">
+          
               <div>
+                  
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                   Email
                 </label>

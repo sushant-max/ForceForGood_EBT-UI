@@ -74,9 +74,9 @@ export const Header: React.FC<HeaderProps> = ({
             {sidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
           <div className="ml-4 md:ml-6">
-            <h1 className="text-lg font-semibold text-[#111827]">
-              Equibillion
-            </h1>
+            {/* <h1 className="text-lg font-semibold text-[#111827]">
+              
+            </h1> */}
           </div>
         </div>
         <div className="relative" ref={dropdownRef}>

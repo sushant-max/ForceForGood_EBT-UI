@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import logo from '/logo.png';
+import hlogo from '/header.svg';
 import {
   LayoutDashboard,
   Building2,
@@ -103,13 +105,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
           </div>
         )}
-        <div className="flex items-center justify-center h-16 border-b border-gray-200">
-          <h1
-            className={`font-bold text-[#466EE5] ${collapsed ? 'text-xl' : 'text-xl'}`}
-          >
-            {collapsed ? 'E' : 'Equibillion'}
-          </h1>
+        <div className="flex items-center justify-center h-16 border-b border-gray-200 px-4">
+          {collapsed ? (
+            <img
+              src={logo}
+              alt="EF Logo"
+              className="h-10 w-10 object-contain"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+                e.currentTarget.parentElement!.innerHTML =
+                  '<span class="font-bold text-xl text-[#466EE5]">EFasdasd</span>'
+              }}
+            />
+          ) : (
+            <img
+              src={hlogo}
+              alt="Equibillion Foundation Logo"
+              className="h-10 w-auto max-w-full object-contain"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+                e.currentTarget.parentElement!.innerHTML =
+                  '<span class="font-bold text-xl text-[#466EE5]">Equibillion</span>'
+              }}
+            />
+          )}
         </div>
+
+
+
+
+
         <nav className="flex-1 pt-5 pb-4 overflow-y-auto">
           <ul className="space-y-1 px-2">
             {filteredNavItems.map((item) => (
@@ -132,15 +157,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="border-t border-gray-200 p-4">
           <button
             onClick={handleLogoutClick}
-            className="w-full flex items-center px-3 py-2 text-sm font-medium text-[#374151] rounded-md hover:bg-gray-50 transition-colors duration-200"
+            className={`w-full flex items-center ${collapsed ? 'justify-center' : ''} px-3 py-2 text-sm font-medium text-[#374151] rounded-md hover:bg-gray-50 transition-colors duration-200`}
             aria-label="Logout"
           >
-            <LogOut size={20} className="mr-3 text-[#374151]" />
+
+           <LogOut
+              size={20}
+              className={`${collapsed ? '' : 'mr-3'} text-[#374151]`}
+            />
             {!collapsed && <span>Logout</span>}
           </button>
         </div>
       </aside>
-      {/* Logout Confirmation Modal */}
+   
       <LogoutConfirmationModal
         isOpen={isLogoutModalOpen}
         onConfirm={handleLogoutConfirm}
