@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronLeft, Building2, Users, Key, CheckCircle, XCircle, AlertCircle, FileText, Clock, MessageSquare, RefreshCw, Loader2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export interface Timestamp {
   _seconds: number;
@@ -111,6 +112,7 @@ interface Corporate {
 
 
 export const CorporateDetail: React.FC = () => {
+  const {getToken} = useAuth();
   const {
     id
   } = useParams<{
@@ -242,7 +244,10 @@ const isExpiredOrExpiresToday = (expiryTimestamp: Timestamp | null | undefined):
     const endpoint = `${API_BASE_URL}/admin/corporates/${id}`;
 
     try {
-      const response = await fetch(endpoint);
+      const token = getToken();
+      const response = await fetch(endpoint, 
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
       const data = await response.json();
 
       if (!response.ok) {
@@ -288,9 +293,10 @@ const isExpiredOrExpiresToday = (expiryTimestamp: Timestamp | null | undefined):
     const endpoint = `${API_BASE_URL}/admin/corporates/${corporate.corporate_id}`; // Use corporate_id for the API route
 
     try {
+      const token = getToken();
       const response = await fetch(endpoint, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ action: 'approve' })
       });
 
@@ -320,9 +326,10 @@ const isExpiredOrExpiresToday = (expiryTimestamp: Timestamp | null | undefined):
     const endpoint = `${API_BASE_URL}/admin/corporates/${corporate.corporate_id}`;
 
     try {
+      const token = getToken();
       const response = await fetch(endpoint, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ action: 'reject' })
       });
 
@@ -360,9 +367,10 @@ const isExpiredOrExpiresToday = (expiryTimestamp: Timestamp | null | undefined):
     const endpoint = `${API_BASE_URL}/admin/corporates/${corporate.corporate_id}`;
 
     try {
+      const token = getToken();
       const response = await fetch(endpoint, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ action: 'renew_license' })
       });
 

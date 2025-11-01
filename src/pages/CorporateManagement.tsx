@@ -125,9 +125,8 @@ export const CorporateManagement: React.FC = () => {
       const token = getToken();
       const response = await axios.get(
         `${API_BASE_URL}`,
-        { headers: { 'Authorization' : `Bearer ${token}` } }
+        { headers: { Authorization : `Bearer ${token}` } }
       );
-      console.log("API response:", response);
 
       // Filter out corporates with status 'pending'
       const corporatesData: Corporate[] = response.data
