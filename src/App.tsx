@@ -9,7 +9,6 @@ import { CorporateDetail } from './pages/CorporateDetail';
 import { IndividualManagement } from './pages/IndividualManagement';
 import { SignupRequests } from './pages/SignupRequests';
 import { VolunteerManagement } from './pages/VolunteerManagement';
-import { VolunteerManagementNEW } from './pages/VolunteerManagementNEW';
 import { CorporateSignup } from './pages/CorporateSignup';
 import { IndividualSignup } from './pages/IndividualSignup';
 import { LicensesDashboard } from './pages/LicensesDashboard';
@@ -40,9 +39,9 @@ export function App() {
                 </ProtectedRoute>} />
 
 
-            <Route path="/volunteer-management2" element={<ProtectedRoute allowedRoles={['super_admin', 'corporate_admin']}>
-                  <VolunteerManagementNEW />
-                </ProtectedRoute>} />
+            {/* <Route path="/volunteer-management2" element={<ProtectedRoute allowedRoles={['super_admin', 'corporate_admin']}>
+                  <VolunteerManagementOLD />
+                </ProtectedRoute>} /> */}
 
 
             {/* Corporate Admin Only Routes */}
