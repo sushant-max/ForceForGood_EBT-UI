@@ -30,11 +30,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   if (!hasPermission(allowedRoles)) {
     // Redirect to appropriate dashboard based on role
     if (user?.role === 'super_admin') {
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/dashboard" replace />
     } else if (user?.role === 'corporate_admin') {
-      return <Navigate to="/licenses" replace />;
+      return <Navigate to="/corporate-dashboard" replace />
     } else {
-      return <Navigate to="/unauthorized" replace />;
+      return <Navigate to="/unauthorized" replace />
     }
   }
   return <>{children}</>;

@@ -35,7 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navigationItems = [
     {
       name: 'Dashboard',
-      path: '/dashboard',
+      path: isSuperAdmin ? '/dashboard' : '/corporate-dashboard',
       icon: <LayoutDashboard size={20} />,
       roles: ['super_admin', 'corporate_admin'],
     },

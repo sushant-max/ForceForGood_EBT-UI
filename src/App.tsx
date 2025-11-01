@@ -4,6 +4,8 @@ import { AuthProvider } from './context/AuthContext';
 import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
+import { SuperAdminDashboard } from './pages/SuperAdminDashboard'
+import { CorporateAdminDashboard } from './pages/CorporateAdminDashboard'
 import { CorporateManagement } from './pages/CorporateManagement';
 import { CorporateDetail } from './pages/CorporateDetail';
 import { IndividualManagement } from './pages/IndividualManagement';
@@ -29,20 +31,30 @@ export function App() {
           <Route element={<ProtectedRoute>
                 <Layout />
               </ProtectedRoute>}>
-            {/* Super Admin and Corporate Admin Routes */}
-            <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['super_admin', 'corporate_admin']}>
-                  <Dashboard />
-                </ProtectedRoute>} />
+            
+            {/* Super Admin Dashboard*/}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={['super_admin']}>
+                  <SuperAdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            {/* Corporate Admin Dashboard */}
+            <Route
+              path="/corporate-dashboard"
+              element={
+                <ProtectedRoute allowedRoles={['corporate_admin']}>
+                  <CorporateAdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="/volunteer-management" element={<ProtectedRoute allowedRoles={['super_admin', 'corporate_admin']}>
                   <VolunteerManagement />
                   
                 </ProtectedRoute>} />
-
-
-            {/* <Route path="/volunteer-management2" element={<ProtectedRoute allowedRoles={['super_admin', 'corporate_admin']}>
-                  <VolunteerManagementOLD />
-                </ProtectedRoute>} /> */}
-
 
             {/* Corporate Admin Only Routes */}
             <Route path="/licenses" element={<ProtectedRoute allowedRoles={['corporate_admin']}>
