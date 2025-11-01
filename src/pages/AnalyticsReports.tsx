@@ -46,10 +46,10 @@ export const AnalyticsReports: React.FC = () => {
               <ChevronDown size={16} />
             </div>
           </div>
-          <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#466EE5]">
+          {/* <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#466EE5]">
             <Download className="h-4 w-4 mr-2" />
             Export
-          </button>
+          </button> */}
         </div>
       </div>
       {error && <ErrorAlert message={error} onRetry={handleRetry} />}

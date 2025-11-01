@@ -86,7 +86,7 @@ export const Login: React.FC = () => {
                 </label>
                 <input id="password" name="password" type="password" required value={password} onChange={e => setPassword(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#466EE5] focus:border-[#466EE5]" aria-describedby="password-helper" />
               </div>
-              <div className="flex items-center justify-between">
+              {/* <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <input id="remember-me" name="remember-me" type="checkbox" className="h-4 w-4 text-[#466EE5] focus:ring-[#466EE5] border-gray-300 rounded" />
                   <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
@@ -98,7 +98,7 @@ export const Login: React.FC = () => {
                     Forgot your password?
                   </a>
                 </div>
-              </div>
+              </div> */}
               <div>
                 <button type="submit" disabled={loading} className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#466EE5] hover:bg-[#3355cc] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#466EE5] disabled:opacity-70">
                   {loading ? 'Signing in...' : 'Sign in'}
