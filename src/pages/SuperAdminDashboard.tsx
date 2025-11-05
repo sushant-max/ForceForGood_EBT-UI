@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react'
 import { Users, Building2, Key, Clock, Calendar, Activity } from 'lucide-react'
 import { ChartContainer } from '../components/ChartContainer'
@@ -6,45 +5,66 @@ import { StatCard } from '../components/StatCard'
 import { LoadingSkeleton } from '../components/LoadingSkeleton'
 import { ErrorAlert } from '../components/ErrorAlert'
 import { EmptyState } from '../components/EmptyState'
+import { useAuth } from '../context/AuthContext'
+
 export const SuperAdminDashboard: React.FC = () => {
+  const { getToken } = useAuth();
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [stats, setStats] = useState<any>(null)
   const [activities, setActivities] = useState<any[]>([])
   const [topCorporates, setTopCorporates] = useState<any[]>([])
+  const [volunteerGrowth, setVolunteerGrowth] = useState<any[]>([])
+  const [licenseUtilization, setLicenseUtilization] = useState<any[]>([])
+  const [period, setPeriod] = useState('30d') // default filter
+
   useEffect(() => {
-    fetchSuperAdminData()
-  }, [])
-  const fetchSuperAdminData = async () => {
+    fetchSuperAdminData(period)
+  }, [period])
+
+  const fetchSuperAdminData = async (period: string) => {
     setLoading(true)
     setError(null)
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/super-admin/dashboard')
-      // const data = await response.json()
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+        const token = getToken();
+        const response = await fetch(
+          `https://us-central1-test-donate-tags.cloudfunctions.net/api/admin/dashboard/summary?period=${period}` 
+          , {headers: { 'Authorization': `Bearer ${token}` } }
+
+
+      )
+      if (!response.ok) throw new Error('Network response was not ok')
+
+      const data = await response.json()
+
+      // Assign backend response data
       setStats({
         corporates: {
-          value: '24',
-          change: '+12%',
-          trend: 'up',
+          value: data.stats.corporates.value,
+          change: data.stats.corporates.change,
+          trend: data.stats.corporates.trend,
         },
         volunteers: {
-          value: '1,284',
-          change: '+8%',
-          trend: 'up',
+          value: data.stats.volunteers.value,
+          change: data.stats.volunteers.change,
+          trend: data.stats.volunteers.trend,
         },
         licenseQuota: {
-          value: '843',
-          change: '+24%',
-          trend: 'up',
+          value: data.stats.licenseQuota.value,
+          change: data.stats.licenseQuota.change,
+          trend: data.stats.licenseQuota.trend,
         },
         approvals: {
-          value: '16',
-          change: '-5%',
-          trend: 'down',
+          value: data.stats.approvals.value,
+          change: data.stats.approvals.change,
+          trend: data.stats.approvals.trend,
         },
       })
+
+      setVolunteerGrowth(data.charts.volunteerGrowth || [])
+      setLicenseUtilization(data.charts.licenseUtilization || [])
+
+      // Optional: you can connect backend activities/top corporates later
       setActivities([
         {
           title: 'Acme Corp approved for onboarding',
@@ -71,32 +91,11 @@ export const SuperAdminDashboard: React.FC = () => {
           iconBg: 'bg-amber-50',
         },
       ])
+
       setTopCorporates([
-        {
-          name: 'TechGiant Inc.',
-          volunteers: 245,
-          impact: 98,
-        },
-        {
-          name: 'Global Finance Ltd',
-          volunteers: 189,
-          impact: 92,
-        },
-        {
-          name: 'Acme Corporation',
-          volunteers: 156,
-          impact: 87,
-        },
-        {
-          name: 'Oceanic Airlines',
-          volunteers: 134,
-          impact: 81,
-        },
-        {
-          name: 'Universal Systems',
-          volunteers: 112,
-          impact: 76,
-        },
+        { name: 'TechGiant Inc.', volunteers: 245, impact: 98 },
+        { name: 'Global Finance Ltd', volunteers: 189, impact: 92 },
+        { name: 'Acme Corporation', volunteers: 156, impact: 87 },
       ])
     } catch (err) {
       console.error('Failed to fetch super admin dashboard data:', err)
@@ -105,22 +104,30 @@ export const SuperAdminDashboard: React.FC = () => {
       setLoading(false)
     }
   }
+
   return (
     <div className="space-y-6">
+      {/* ================= HEADER ================= */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-[#111827]">
-          Dashboard
-        </h1>
+        <h1 className="text-2xl font-bold text-[#111827]">Dashboard</h1>
         <div className="flex space-x-2">
-          <select className="border border-gray-300 rounded-md text-sm p-2">
-            <option>Last 30 days</option>
-            <option>Last 90 days</option>
-            <option>This year</option>
-            <option>All time</option>
+          <select
+            className="border border-gray-300 rounded-md text-sm p-2"
+            value={period}
+            onChange={(e) => setPeriod(e.target.value)}
+          >
+            <option value="30d">Last 30 days</option>
+            <option value="90d">Last 90 days</option>
+            <option value="year">This year</option>
+            <option value="all">All time</option>
           </select>
         </div>
       </div>
-      {error && <ErrorAlert message={error} onRetry={fetchSuperAdminData} />}
+
+      {/* ================= ERROR ================= */}
+      {error && <ErrorAlert message={error} onRetry={() => fetchSuperAdminData(period)} />}
+
+      {/* ================= STATS ================= */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {loading ? (
           <>
@@ -170,6 +177,8 @@ export const SuperAdminDashboard: React.FC = () => {
           </>
         ) : null}
       </div>
+
+      {/* ================= CHARTS ================= */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {loading ? (
           <>
@@ -180,16 +189,24 @@ export const SuperAdminDashboard: React.FC = () => {
           <>
             <ChartContainer
               title="Volunteer Growth"
-              subtitle="Last 6 months"
               type="line"
+              data={volunteerGrowth}
+              dataKeyX="month"
+              dataKeyY="count"
             />
             <ChartContainer
               title="License Utilization"
               subtitle="By corporate"
+              type="bar"
+              data={licenseUtilization}
+              dataKeyX="month"
+              dataKeyY="count"
             />
           </>
         )}
       </div>
+
+      {/* ================= TABLES ================= */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {loading ? (
           <>
@@ -198,15 +215,14 @@ export const SuperAdminDashboard: React.FC = () => {
           </>
         ) : (
           <>
+            {/* Recent Activity */}
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
               {activities.length > 0 ? (
                 <div className="space-y-4">
                   {activities.map((activity, index) => (
                     <div key={index} className="flex items-start">
-                      <div
-                        className={`p-2 rounded-full mr-3 ${activity.iconBg}`}
-                      >
+                      <div className={`p-2 rounded-full mr-3 ${activity.iconBg}`}>
                         {activity.icon}
                       </div>
                       <div>
@@ -224,25 +240,20 @@ export const SuperAdminDashboard: React.FC = () => {
                 />
               )}
             </div>
+
+            {/* Top Performing Corporates */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold mb-4">
-                Top Performing Corporates
-              </h2>
+              <h2 className="text-lg font-semibold mb-4">Top Performing Corporates</h2>
               {topCorporates.length > 0 ? (
                 <div className="space-y-4">
                   {topCorporates.map((corporate, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between"
-                    >
+                    <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center">
                         <span className="text-sm font-medium text-gray-500 w-5">
                           {index + 1}
                         </span>
                         <div className="ml-3">
-                          <p className="text-sm font-medium">
-                            {corporate.name}
-                          </p>
+                          <p className="text-sm font-medium">{corporate.name}</p>
                           <p className="text-xs text-gray-500">
                             {corporate.volunteers} volunteers
                           </p>
